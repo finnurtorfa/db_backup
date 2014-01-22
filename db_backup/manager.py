@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
+
 from sqlalchemy import create_engine
 
 class DBManager(object):
   def __init__(self, dialect, dbapi=None, username=None, password=None, addr='localhost',
                port=None, db=None, echo=False):
+    self.logger = logging.getLogger(__name__)
     self.url = self._set_url(dialect=dialect,
                              dbapi=dbapi,
                              username=username, 
