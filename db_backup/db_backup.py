@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, getopt, logging
+import os, sys, logging
+import logging.config
+from os.path import expanduser 
 
-from os import makedirs
-from os.path import expanduser, dirname, exists
+import yaml
 
 from manager import DBManager
 
 def main(argv):
-  home = expanduser('~')
+  home = os.path.expanduser('~')
   input_file = home + '/.db_backup.yml'
 
   try:
@@ -18,24 +19,32 @@ def main(argv):
     logger.exception('File not found... Exiting!')
     sys.exit(-1)
 
-def init_logging(dirname='log', **kwargs):
+def init_logging(default_dir='log', default_path='logger.yml',
+                 default_level=logging.INFO, env_key='LOG_CFG'):
   try:
-    makedirs(dirname, exist_ok=True)
+    os.makedirs(default_dir, exist_ok=True)
   except OSError as e:
     logging.exception('OSError: ')
     sys.exit(-1)
+    
+  path = default_path
+  value = os.getenv(env_key, None)
+  if value:
+    path = value
+  if os.path.exists(path):
+    with open(path, 'rt') as f:
+      config = yaml.load(f.read())
+    logging.config.dictConfig(config)
+  else:
+    logging.basicConfig(level=default_level)
+  
 
-  logging.basicConfig(**kwargs)
   logger = logging.getLogger(__name__)
   logger.info('Started running %s', __file__)
   return logger
 
 if __name__ == '__main__':
-  log_args = {'filename':'log/db_backup.log', 
-              'format': '[%(levelname)s: %(name)s: %(asctime)s] \t %(message)s', 
-              'datefmt':'%d-%m-%Y %H:%M:%S',
-              'level': 'DEBUG'}  
-  logger = init_logging(**log_args)
+  logger = init_logging()
   
   bak = DBManager(dialect='postgresql', username='username', password='password',
           db='db')
