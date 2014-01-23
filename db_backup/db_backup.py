@@ -19,8 +19,11 @@ def main(argv):
     sys.exit(-1)
 
 def init_logging(dirname='log', **kwargs):
-  if not exists(dirname):
-    makedirs(dirname)
+  try:
+    makedirs(dirname, exist_ok=True)
+  except OSError as e:
+    logging.exception('OSError: ')
+    sys.exit(-1)
 
   logging.basicConfig(**kwargs)
   logger = logging.getLogger(__name__)
