@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
+import sys, logging
 
 from sqlalchemy import create_engine
+
+class ArgumentError(ValueError):
+  pass
 
 class DBManager(object):
   def __init__(self, **kwargs):
@@ -23,7 +26,16 @@ class DBManager(object):
     port     -- The port to use
     database -- Name of the database to use
     """
-    url = kwargs['dialect'] 
+    url = ''
+
+    try:
+      if 'dialect' not in kwargs:
+        raise ArgumentError()
+
+      url = kwargs['dialect'] 
+    except ArgumentError:
+      self.logger.exception("You must specify a dialect. Exiting!")  
+      sys.exit(-1)
 
     if 'dbapi' in kwargs:
       if kwargs['dbapi'] != 'None':
@@ -58,9 +70,5 @@ class DBManager(object):
         self.logger.info("Appending to url: %s", url)
 
     return url
-
-if __name__ == "__main__":
-  bak = DBManager(dialect='postgresql', username='username', password='password',
-          db='db')
 
 __version__ = '0.1'
