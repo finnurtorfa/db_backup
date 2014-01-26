@@ -3,7 +3,7 @@
 
 import sys, logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 
 class ArgumentError(ValueError):
   pass
@@ -13,6 +13,9 @@ class DBManager(object):
     self.logger = logging.getLogger(__name__)
     self.url = self._set_url(**kwargs)
     self.engine = create_engine(self.url)
+    self.connection = self.engine.connect()
+    self.metadata = MetaData(bind=self.engine)
+    self.metadata.reflect()
 
   def _set_url(self, **kwargs):
     """ Returns a string with the database url.
