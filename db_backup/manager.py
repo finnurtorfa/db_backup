@@ -4,6 +4,8 @@
 import sys, logging
 
 from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.serializer import dumps
 
 class ArgumentError(ValueError):
   pass
@@ -11,13 +13,13 @@ class ArgumentError(ValueError):
 class DBManager(object):
   def __init__(self, **kwargs):
     self.logger = logging.getLogger(__name__)
-    self.url = self._set_url(**kwargs)
+    self.url = self._get_url(**kwargs)
     self.engine = create_engine(self.url)
     self.connection = self.engine.connect()
     self.metadata = MetaData(bind=self.engine)
     self.metadata.reflect()
 
-  def _set_url(self, **kwargs):
+  def _get_url(self, **kwargs):
     """ Returns a string with the database url.
 
     Keyword argument: 
