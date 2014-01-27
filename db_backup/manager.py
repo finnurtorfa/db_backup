@@ -80,4 +80,14 @@ class DBManager(object):
 
     return url
 
+  def get_serialized_data(self):
+    """ Returns a dict of serialized data from tables in a database
+    """
+    serial_data = dict()
+    for t in self.metadata.sorted_tables:
+      q = self.session.query(t)
+      serial_data[t.name] = dumps(q.all())
+
+    return serial_data
+
 __version__ = '0.1'
