@@ -24,7 +24,8 @@ def main(argv):
     stream = open(input_file, 'r')
     data = load(stream, Loader=Loader)
 
-    bak = DBManager(**data['db_setup'])
+    db_manager = DBManager(filename='myfile.txt', **data['db_setup'])
+    db_manager.serialize()
 
   except FileNotFoundError:
     logger.exception('File not found... Exiting!')
