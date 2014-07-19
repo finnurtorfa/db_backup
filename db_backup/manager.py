@@ -5,15 +5,16 @@ import sys, logging
 
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.serializer import dumps
+from sqlalchemy.ext.serializer import Serializer
 
 class ArgumentError(ValueError):
   pass
 
 class DBManager(object):
-  def __init__(self, **kwargs):
+  def __init__(self, filename=None, **kwargs):
     self.logger = logging.getLogger(__name__)
     self.url = self._set_url(**kwargs)
+    self.filename = filename
     self.engine = create_engine(self.url)
     self.connection = self.engine.connect()
 
@@ -80,14 +81,13 @@ class DBManager(object):
 
     return url
 
-  def get_serialized_data(self):
-    """ Returns a dict of serialized data from tables in a database
+  def serialize(self):
+    """ Serializes data from tables in a database and writes them to a file
     """
-    serial_data = dict()
-    for t in self.metadata.sorted_tables:
-      q = self.session.query(t)
-      serial_data[t.name] = dumps(q.all())
-
-    return serial_data
+    with open(self.filename, 'wb') as filename:
+      serializer = Serializer(file=filename)
+      for t in self.metadata.sorted_tables:
+        q = self.session.query(t)
+        serializer.dump(q.all())
 
 __version__ = '0.1'
